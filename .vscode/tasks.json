@@ -1,0 +1,134 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+
+    // ── Infrastructure ──────────────────────────────────────
+    {
+      "label": "Docker: Start infra (Postgres + Redis)",
+      "type": "shell",
+      "command": "docker compose up -d postgres redis",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start all services",
+      "type": "shell",
+      "command": "docker compose up -d --build",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Stop all",
+      "type": "shell",
+      "command": "docker compose down",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+
+    // ── Individual services (all load .env automatically) ────
+    {
+      "label": "Run: auth-service (port 8087)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 auth-service",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true },
+      "dependsOn": "Docker: Start infra (Postgres + Redis)",
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: patient-identity-service (port 8081)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 patient-identity-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: emr-service (port 8082)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 emr-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: appointment-service (port 8083)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 appointment-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: telemedicine-service (port 8084)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 telemedicine-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: pharmacy-service (port 8085)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 pharmacy-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: analytics-service (port 8086)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 analytics-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: notification-service (port 8088)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 notification-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Run: ussd-service (port 8089)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File dev/Start-Service.ps1 ussd-service",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$javac"]
+    },
+
+    // ── Frontend ─────────────────────────────────────────────
+    {
+      "label": "Run: frontend dev server (port 5173)",
+      "type": "shell",
+      "command": "cd medic-frontend && npm install && npm run dev",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+
+    // ── Build ─────────────────────────────────────────────────
+    {
+      "label": "Maven: Build all (skip tests)",
+      "type": "shell",
+      "command": "mvn clean package -DskipTests -q",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "Maven: Run all tests",
+      "type": "shell",
+      "command": "mvn test",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": ["$javac"]
+    }
+  ]
+}

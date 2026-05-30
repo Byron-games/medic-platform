@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "redhat.java",
+    "vscjava.vscode-java-pack",
+    "vscjava.vscode-spring-initializr",
+    "vmware.vscode-spring-boot",
+    "vscjava.vscode-maven",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "dbaeumer.vscode-eslint",
+    "rangav.vscode-thunder-client",
+    "42crunch.vscode-openapi"
+  ]
+}

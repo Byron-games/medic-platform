@@ -1,0 +1,14 @@
+# Test profile — uses Testcontainers, no Redis required
+spring:
+  application:
+    name: api-gateway-test
+  data:
+    redis:
+      host: localhost
+      port: 6370   # non-existent — tests should mock Redis
+
+server:
+  port: 0  # random port for tests
+
+jwt:
+  secret: test-secret-at-least-32-chars-long-for-testing

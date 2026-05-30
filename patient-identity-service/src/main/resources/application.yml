@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: patient-identity-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5433/medic_patients
+    username: ${DB_USER:medic}
+    password: ${DB_PASSWORD:medic_secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      pool-name: PatientHikariPool
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_batch_fetch_size: 20
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:medic-redis-password}
+
+server:
+  port: 8081
+  compression:
+    enabled: true
+    mime-types:
+      - application/json
+      - application/hal+json
+      - text/plain
+    min-response-size: 1024
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+logging:
+  level:
+    com.medic: DEBUG

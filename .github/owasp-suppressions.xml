@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+  <!--
+    M.E.D.I.C. Platform — OWASP Dependency Check Suppressions
+    
+    Add entries here for known false positives or accepted risks.
+    Always document WHY a CVE is suppressed.
+    
+    Format:
+      <suppress>
+        <notes>Reason for suppression</notes>
+        <cve>CVE-YYYY-NNNNN</cve>
+      </suppress>
+  -->
+
+  <!-- Spring Boot 3.2.5 ships with a patched version of these dependencies.
+       The vulnerability scanner may flag the unshaded jar name. -->
+  <suppress>
+    <notes>
+      Spring Boot 3.2.5 bundles a patched SnakeYAML. The CVE applies to
+      versions prior to 2.0 which Spring Boot does not use.
+    </notes>
+    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+    <cvssBelow>7</cvssBelow>
+  </suppress>
+
+  <!-- H2 is test-scope only — not included in production runtime JARs -->
+  <suppress>
+    <notes>
+      H2 database is used only in test scope (test containers / unit tests).
+      It is not present in production Docker images.
+    </notes>
+    <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+    <vulnerabilityName regex="true">.*</vulnerabilityName>
+  </suppress>
+
+</suppressions>

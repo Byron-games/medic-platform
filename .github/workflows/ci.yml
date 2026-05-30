@@ -1,0 +1,214 @@
+name: CI — Build, Test & Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+
+jobs:
+  # ──────────────────────────────────────────────────────
+  # Java services — build & test all 10 microservices
+  # ──────────────────────────────────────────────────────
+  java-build:
+    name: Java Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: medic
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: medic_auth
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for SonarCloud (if added later)
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Build all modules (skip tests)
+        run: mvn clean package -DskipTests -q
+
+      - name: Run unit tests
+        run: mvn test -q
+        env:
+          JWT_SECRET: test-secret-at-least-32-chars-for-ci-runs-ok
+          DB_HOST: localhost
+          DB_USER: medic
+          DB_PASSWORD: test_password
+          REDIS_HOST: localhost
+          REDIS_PASSWORD: ""
+
+      - name: Generate test report
+        if: always()
+        run: mvn surefire-report:report-only -q 2>/dev/null || true
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-test-reports
+          path: '**/target/surefire-reports/'
+          retention-days: 14
+
+      - name: Check for compilation warnings
+        run: mvn compile -q 2>&1 | grep -i "warning" || true
+
+  # ──────────────────────────────────────────────────────
+  # Frontend — install, lint, type-check, build
+  # ──────────────────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build & Lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: medic-frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: medic-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+
+      - name: Lint (ESLint)
+        run: npm run lint || true   # warn-only for now; switch to fail once codebase is clean
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Check bundle size
+        run: |
+          BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
+          echo "Bundle size: $BUNDLE_SIZE"
+          # Warn if bundle exceeds 5MB (gzipped will be ~1MB)
+          BYTES=$(du -sb dist/ | cut -f1)
+          if [ "$BYTES" -gt 5000000 ]; then
+            echo "::warning::Bundle exceeds 5MB. Consider code splitting."
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: medic-frontend/dist/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────
+  # Docker — build images and verify they start
+  # ──────────────────────────────────────────────────────
+  docker-smoke:
+    name: Docker Smoke Test
+    runs-on: ubuntu-latest
+    needs: [java-build, frontend-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env for smoke test
+        run: |
+          cat > .env << 'ENVEOF'
+          JWT_SECRET=smoke-test-secret-that-is-at-least-32-characters
+          DB_USER=medic
+          DB_PASSWORD=smoke_pass
+          REDIS_PASSWORD=smoke_redis
+          GRAFANA_USER=admin
+          GRAFANA_PASSWORD=admin
+          JITSI_SERVER_URL=https://meet.jit.si
+          ENVEOF
+
+      - name: Build & start infrastructure
+        run: |
+          docker compose up -d postgres redis
+          sleep 15
+          docker compose ps
+
+      - name: Build auth-service image (proxy for all services)
+        run: |
+          docker compose build auth-service
+          echo "Build successful"
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
+
+  # ──────────────────────────────────────────────────────
+  # Security scan — check dependencies for CVEs
+  # ──────────────────────────────────────────────────────
+  security-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    needs: java-build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: OWASP Dependency Check
+        run: |
+          mvn org.owasp:dependency-check-maven:check \
+            -DfailBuildOnCVSS=9 \
+            -DsuppressionFile=.github/owasp-suppressions.xml \
+            --no-transfer-progress 2>/dev/null || true
+        continue-on-error: true  # Don't fail CI; review reports separately
+
+      - name: Upload OWASP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-report
+          path: '**/target/dependency-check-report.html'
+          retention-days: 30
