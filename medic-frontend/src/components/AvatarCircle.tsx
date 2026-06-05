@@ -17,7 +17,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 interface Props {
   size?: number;
-  radius?: number;
+  radius?: string | number;
   className?: string;
   onClick?: () => void;
 }

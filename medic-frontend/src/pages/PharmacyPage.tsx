@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -43,7 +44,7 @@ interface SpringPage<T> {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; cls: string; icon: React.FC<{ size: number }> }
+  { label: string; cls: string; icon: LucideIcon }
 > = {
   ISSUED: {
     label: "Awaiting dispensing",

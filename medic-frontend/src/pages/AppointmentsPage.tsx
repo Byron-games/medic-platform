@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   AlertCircle,
   Calendar,
@@ -43,7 +44,7 @@ interface SpringPage<T> {
 // ── Helpers ──────────────────────────────────────────────────
 const STATUS_CONFIG: Record<
   string,
-  { label: string; cls: string; icon: React.FC<{ size: number }> }
+  { label: string; cls: string; icon: LucideIcon }
 > = {
   SCHEDULED: {
     label: "Scheduled",

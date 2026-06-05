@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -211,7 +212,7 @@ export default function DashboardPage() {
   interface QA {
     label: string;
     desc: string;
-    icon: React.FC<{ size: number; style?: React.CSSProperties }>;
+    icon: LucideIcon;
     path: string;
     color: string;
     bg: string;
