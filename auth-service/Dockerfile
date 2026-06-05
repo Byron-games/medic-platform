@@ -9,7 +9,7 @@ COPY auth-service/pom.xml ./auth-service/pom.xml
 RUN mvn dependency:go-offline -q -f auth-service/pom.xml
 # Build the service
 COPY auth-service/src ./auth-service/src
-RUN mvn package -DskipTests -q -f auth-service/pom.xml
+RUN mvn package -Dmaven.test.skip=true -q -f auth-service/pom.xml
 
 # Stage 2: Runtime (minimal Alpine JRE)
 FROM eclipse-temurin:21-jre-alpine

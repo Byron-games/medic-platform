@@ -111,6 +111,8 @@ services:
       DB_HOST:              postgres
       DB_USER:              ${DB_USER}
       DB_PASSWORD:          ${DB_PASSWORD}
+      REDIS_HOST:           redis
+      REDIS_PASSWORD:       ${REDIS_PASSWORD}
       ANALYTICS_SERVICE_URL: http://analytics-service:8086
     depends_on:
       postgres: { condition: service_healthy }
@@ -127,6 +129,8 @@ services:
       DB_HOST:                  postgres
       DB_USER:                  ${DB_USER}
       DB_PASSWORD:              ${DB_PASSWORD}
+      REDIS_HOST:               redis
+      REDIS_PASSWORD:           ${REDIS_PASSWORD}
       NOTIFICATION_SERVICE_URL: http://notification-service:8088
     depends_on:
       postgres: { condition: service_healthy }
@@ -143,6 +147,8 @@ services:
       DB_HOST:          postgres
       DB_USER:          ${DB_USER}
       DB_PASSWORD:      ${DB_PASSWORD}
+      REDIS_HOST:       redis
+      REDIS_PASSWORD:   ${REDIS_PASSWORD}
       JITSI_SERVER_URL: ${JITSI_SERVER_URL:-https://meet.jit.si}
       APP_BASE_URL:     https://${DOMAIN}
     depends_on:
@@ -157,9 +163,11 @@ services:
     container_name: medic-pharmacy
     restart: always
     environment:
-      DB_HOST:     postgres
-      DB_USER:     ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST:        postgres
+      DB_USER:        ${DB_USER}
+      DB_PASSWORD:    ${DB_PASSWORD}
+      REDIS_HOST:     redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
       postgres: { condition: service_healthy }
     networks: [medic-net]
@@ -192,6 +200,8 @@ services:
       DB_HOST:                     postgres
       DB_USER:                     ${DB_USER}
       DB_PASSWORD:                 ${DB_PASSWORD}
+      REDIS_HOST:                  redis
+      REDIS_PASSWORD:              ${REDIS_PASSWORD}
       AFRICAS_TALKING_API_KEY:     ${AFRICAS_TALKING_API_KEY:-}
       AFRICAS_TALKING_USERNAME:    ${AFRICAS_TALKING_USERNAME:-sandbox}
       AFRICAS_TALKING_SENDER_ID:   ${AFRICAS_TALKING_SENDER_ID:-MEDIC}
@@ -207,9 +217,11 @@ services:
     container_name: medic-ussd
     restart: always
     environment:
-      DB_HOST:     postgres
-      DB_USER:     ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST:        postgres
+      DB_USER:        ${DB_USER}
+      DB_PASSWORD:    ${DB_PASSWORD}
+      REDIS_HOST:     redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
       postgres: { condition: service_healthy }
     networks: [medic-net]

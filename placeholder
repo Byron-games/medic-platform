@@ -1,0 +1,26 @@
+# Paste this entire block — it does everything
+sudo apt-get update -qq && \
+sudo apt-get install -y -qq docker.io docker-compose-plugin git && \
+sudo systemctl start docker && \
+sudo systemctl enable docker && \
+git clone https://github.com/Byron-games/medic-platform.git /opt/medic-platform && \
+cd /opt/medic-platform && \
+cat > .env << 'ENVEOF'
+JWT_SECRET=c00b3fc873a07ca2173c5e3f630eb9e1811650f8c45de769c659ac0cdfca8430
+DB_USER=medic
+DB_PASSWORD=medic_secret
+DB_NAME=medic_auth
+REDIS_PASSWORD=medic-redis-password
+AFRICAS_TALKING_API_KEY=atsk_c6a3329368e53de6889793717983762dde3a5871e716036d1ba90bbaed2799878ab19da3
+AFRICAS_TALKING_USERNAME=sandbox
+GRAFANA_USER=admin
+GRAFANA_PASSWORD=Admin@2026!
+JITSI_SERVER_URL=https://meet.jit.si
+DOMAIN=13.140.138.87
+ENVEOF
+sudo docker compose -f docker-compose.prod.yml up -d --build
+
+ssh root@13.140.138.87
+cd /opt/medic-platform
+git pull
+docker compose -f docker-compose.prod.yml up -d
