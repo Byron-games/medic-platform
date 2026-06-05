@@ -8,19 +8,19 @@
 
 11 independent microservices behind a Spring Cloud Gateway:
 
-| Service | Port | Purpose |
-|---|---|---|
-| API Gateway | 8080 | JWT auth, routing, rate limiting |
-| Auth Service | 8087 | Login, registration, token management |
-| Patient Identity | 8081 | Master Patient Index (MPI) |
-| EMR Service | 8082 | Electronic Medical Records |
-| Appointment Service | 8083 | Scheduling & telemedicine bookings |
-| Telemedicine Service | 8084 | Jitsi video sessions |
-| Pharmacy Service | 8085 | e-Prescriptions, drug interactions |
-| Analytics Service | 8086 | Disease surveillance, AI triage |
-| Notification Service | 8088 | SMS via Twilio / Africa's Talking |
-| USSD Service | 8089 | Feature phone access via USSD |
-| Frontend | 3001 | React 18 + TypeScript + Tailwind |
+| Service              | Port | Purpose                               |
+| -------------------- | ---- | ------------------------------------- |
+| API Gateway          | 8080 | JWT auth, routing, rate limiting      |
+| Auth Service         | 8087 | Login, registration, token management |
+| Patient Identity     | 8081 | Master Patient Index (MPI)            |
+| EMR Service          | 8082 | Electronic Medical Records            |
+| Appointment Service  | 8083 | Scheduling & telemedicine bookings    |
+| Telemedicine Service | 8084 | Jitsi video sessions                  |
+| Pharmacy Service     | 8085 | e-Prescriptions, drug interactions    |
+| Analytics Service    | 8086 | Disease surveillance, AI triage       |
+| Notification Service | 8088 | SMS via Twilio / Africa's Talking     |
+| USSD Service         | 8089 | Feature phone access via USSD         |
+| Frontend             | 3001 | React 18 + TypeScript + Tailwind      |
 
 ## Quick Start (Local Development)
 
@@ -73,12 +73,14 @@ DOMAIN=medic.health EMAIL=admin@medic.health bash vps/scripts/setup.sh
 
 ## Default Credentials
 
-| User | Password | Role |
-|---|---|---|
+| User  | Password  | Role  |
+| ----- | --------- | ----- |
 | admin | Admin@123 | ADMIN |
 
 **Change these immediately after first login.**
 
 ---
+
+Added initial feature work
 
 © 2026 M.E.D.I.C. Healthcare Technologies — Proprietary
