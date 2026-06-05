@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --accent: #0EA5E9;
+  --accent-hover: #0284C7;
+  --border: #E2E8F0;
+}
+
+.dark {
+  --bg-primary: #080C14;
+  --bg-secondary: #1A2035;
+  --bg-card: #1A2035;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --accent: #00D9FF;
+  --accent-hover: #00B8D9;
+  --border: #2D3748;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Syne', sans-serif;
+}
+
+code, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}

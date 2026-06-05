@@ -1,0 +1,40 @@
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export interface User {
+  id: number
+  username: string
+  fullName: string
+  email: string
+  role: 'ADMIN' | 'CLINICIAN' | 'FACILITY_ADMIN' | 'PHARMACY' | 'ANALYST'
+  facilityId: string
+  facilityName: string
+}
+
+interface AuthState {
+  user: User | null
+  token: string | null
+  isAuthenticated: boolean
+  login: (user: User, token: string) => void
+  logout: () => void
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      login: (user, token) => set({ user, token, isAuthenticated: true }),
+      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+    }),
+    {
+      name: 'medic-auth',
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+)

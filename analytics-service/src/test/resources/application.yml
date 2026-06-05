@@ -1,0 +1,22 @@
+# Test profile — uses Testcontainers, no Redis required
+spring:
+  application:
+    name: analytics-service-test
+  datasource:
+    url: jdbc:tc:postgresql:15:///test_analytics_service
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6370   # non-existent — tests should mock Redis
+
+server:
+  port: 0  # random port for tests
+
+jwt:
+  secret: test-secret-at-least-32-chars-long-for-testing

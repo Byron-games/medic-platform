@@ -1,0 +1,363 @@
+# M.E.D.I.C. Platform — Docker Compose
+# Usage: docker compose up -d
+# All env values are loaded from .env (copy from .env.example)
+
+services:
+
+  # ──────────────────────────────────────
+  # Infrastructure
+  # ──────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: medic-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: medic_auth
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d medic_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medic-internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: medic-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # API Gateway  (port 8080)
+  # ──────────────────────────────────────
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: medic-api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 3
+    networks:
+      - medic-internal
+      - medic-external
+
+  # ──────────────────────────────────────
+  # Auth Service  (port 8087)
+  # ──────────────────────────────────────
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: medic-auth
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8087/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 3
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Patient Identity Service  (port 8081)
+  # ──────────────────────────────────────
+  patient-identity-service:
+    build:
+      context: .
+      dockerfile: patient-identity-service/Dockerfile
+    container_name: medic-patient
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # EMR Service  (port 8082)
+  # ──────────────────────────────────────
+  emr-service:
+    build:
+      context: .
+      dockerfile: emr-service/Dockerfile
+    container_name: medic-emr
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Appointment Service  (port 8083)
+  # ──────────────────────────────────────
+  appointment-service:
+    build:
+      context: .
+      dockerfile: appointment-service/Dockerfile
+    container_name: medic-appointment
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Telemedicine Service  (port 8084)
+  # ──────────────────────────────────────
+  telemedicine-service:
+    build:
+      context: .
+      dockerfile: telemedicine-service/Dockerfile
+    container_name: medic-telemedicine
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JITSI_SERVER_URL: ${JITSI_SERVER_URL:-https://meet.jit.si}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Pharmacy Service  (port 8085)
+  # ──────────────────────────────────────
+  pharmacy-service:
+    build:
+      context: .
+      dockerfile: pharmacy-service/Dockerfile
+    container_name: medic-pharmacy
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Analytics Service  (port 8086)
+  # ──────────────────────────────────────
+  analytics-service:
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
+    container_name: medic-analytics
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Notification Service  (port 8088)
+  # ──────────────────────────────────────
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: medic-notification
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
+      AFRICAS_TALKING_API_KEY: ${AFRICAS_TALKING_API_KEY:-}
+      AFRICAS_TALKING_USERNAME: ${AFRICAS_TALKING_USERNAME:-sandbox}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # USSD Service  (port 8089)
+  # ──────────────────────────────────────
+  ussd-service:
+    build:
+      context: .
+      dockerfile: ussd-service/Dockerfile
+    container_name: medic-ussd
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      AFRICAS_TALKING_API_KEY: ${AFRICAS_TALKING_API_KEY:-}
+      AFRICAS_TALKING_USERNAME: ${AFRICAS_TALKING_USERNAME:-sandbox}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medic-internal
+
+  # ──────────────────────────────────────
+  # Frontend  (port 3001)
+  # ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./medic-frontend
+      dockerfile: Dockerfile
+    container_name: medic-frontend
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - medic-internal
+      - medic-external
+
+  # ──────────────────────────────────────
+  # Monitoring (optional — comment out to save RAM)
+  # ──────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: medic-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+    ports:
+      - "9090:9090"
+    networks:
+      - medic-internal
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: medic-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - medic-internal
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  medic-internal:
+    driver: bridge
+  medic-external:
+    driver: bridge

@@ -1,0 +1,39 @@
+# ── Secrets (NEVER commit these) ──────────────────
+.env
+*.env.local
+
+# ── Maven ─────────────────────────────────────────
+target/
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# ── Node / Frontend ───────────────────────────────
+node_modules/
+dist/
+medic-frontend/dist/
+medic-frontend/.vite/
+
+# ── IDEs ──────────────────────────────────────────
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+*.code-workspace
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docker volumes (if mounted locally) ──────────
+postgres_data/
+redis_data/
+
+# ── Logs ──────────────────────────────────────────
+*.log
+logs/
+
+# ── Coverage reports ──────────────────────────────
+**/target/site/
