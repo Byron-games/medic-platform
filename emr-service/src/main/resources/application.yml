@@ -1,13 +1,8 @@
 spring:
   application:
     name: emr-service
-  data:
-    redis:
-      host: ${REDIS_HOST:redis}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
   datasource:
-    url: jdbc:postgresql://${DB_HOST:postgres}:5432/medic_emr
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/medic_emr
     username: ${DB_USER:medic}
     password: ${DB_PASSWORD:medic_secret}
     driver-class-name: org.postgresql.Driver
@@ -15,6 +10,7 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 30000
+      pool-name: EmrHikariPool
   jpa:
     hibernate:
       ddl-auto: validate
@@ -23,16 +19,22 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        default_batch_fetch_size: 20
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
 server:
   port: 8082
-
-jwt:
-  secret: ${JWT_SECRET:change-me-in-production-must-be-32-chars-min}
+  error:
+    include-message: never
+    include-stacktrace: never
 
 management:
   endpoints:
