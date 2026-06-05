@@ -1,18 +1,8 @@
 spring:
   application:
     name: auth-service
-<<<<<<< HEAD
-  data:
-    redis:
-      host: ${REDIS_HOST:redis}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:postgres}:5432/medic_auth
-=======
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/medic_auth
->>>>>>> 511e186 (added auth-service)
     username: ${DB_USER:medic}
     password: ${DB_PASSWORD:medic_secret}
     driver-class-name: org.postgresql.Driver
@@ -20,12 +10,9 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 30000
-<<<<<<< HEAD
-=======
       idle-timeout: 600000
       max-lifetime: 1800000
       pool-name: AuthHikariPool
->>>>>>> 511e186 (added auth-service)
   jpa:
     hibernate:
       ddl-auto: validate
@@ -34,23 +21,12 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-<<<<<<< HEAD
-=======
         jdbc:
           batch_size: 20
->>>>>>> 511e186 (added auth-service)
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
-<<<<<<< HEAD
-
-server:
-  port: 8087
-
-jwt:
-  secret: ${JWT_SECRET:change-me-in-production-must-be-32-chars-min}
-=======
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -67,7 +43,6 @@ jwt:
   secret: ${JWT_SECRET:change-me-in-production-must-be-32-chars-min}
   access-token-expiry-ms: 900000     # 15 minutes
   refresh-token-expiry-ms: 604800000 # 7 days
->>>>>>> 511e186 (added auth-service)
 
 management:
   endpoints:
@@ -88,7 +63,4 @@ springdoc:
 logging:
   level:
     com.medic: DEBUG
-<<<<<<< HEAD
-=======
     org.springframework.security: INFO
->>>>>>> 511e186 (added auth-service)

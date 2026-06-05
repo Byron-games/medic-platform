@@ -36,14 +36,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-<<<<<<< HEAD
-=======
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
->>>>>>> 511e186 (added auth-service)
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
