@@ -4,6 +4,7 @@ import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary; // <-- Imported Primary
 import reactor.core.publisher.Mono;
 
 @Configuration
@@ -34,6 +35,7 @@ public class RateLimitConfig {
      * spikes) Tighter limits applied per-route below for sensitive endpoints.
      */
     @Bean
+    @Primary // <-- Added this annotation to resolve the auto-wiring conflict
     public RedisRateLimiter defaultRateLimiter() {
         return new RedisRateLimiter(20, 40, 1);
     }
